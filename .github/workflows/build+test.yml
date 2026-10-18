@@ -27,4 +27,5 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
       - run: cargo fmt --check
       - run: cargo clippy --locked -- -D warnings
+      - run: cargo doc --locked --no-deps
       - run: cargo test --locked
