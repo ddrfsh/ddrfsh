@@ -1,0 +1,26 @@
+# EditorConfig keeps formatting consistent across editors.
+# https://editorconfig.org
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.rs]
+# Matches rustfmt's default max_width.
+max_line_length = 100
+
+[*.{yml,yaml,json,jsonc}]
+indent_size = 2
+
+[*.{md,markdown}]
+# Two trailing spaces encode a hard line break in Markdown.
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
