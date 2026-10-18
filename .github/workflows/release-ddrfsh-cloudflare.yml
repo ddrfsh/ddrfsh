@@ -1,0 +1,101 @@
+name: Release ddrfsh-cloudflare
+
+on:
+  push:
+    branches: [master]
+    tags: ["ddrfsh-cloudflare-v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: release-ddrfsh-cloudflare-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CRATE: crates/ddrfsh-cloudflare
+
+jobs:
+  check:
+    name: Decide whether to build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      build: ${{ steps.paths.outputs.build }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Verify the tag matches the crate version
+        if: github.ref_type == 'tag'
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="$(sed -n 's/^version = "\(.*\)"$/\1/p' "$CRATE/Cargo.toml" | head -n1)"
+          if [ -z "$version" ]; then
+            echo "::error::could not read the version from $CRATE/Cargo.toml"
+            exit 1
+          fi
+          if [ "$TAG" != "ddrfsh-cloudflare-v$version" ]; then
+            echo "::error::tag $TAG does not match the crate version (expected ddrfsh-cloudflare-v$version)"
+            exit 1
+          fi
+      - name: Check changed paths
+        id: paths
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          # Tag pushes and manual runs always rebuild; path filtering is only
+          # meaningful for branch pushes.
+          if [ "$EVENT" != "push" ] || [ "$REF_TYPE" = "tag" ]; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # A brand-new branch has no previous commit to compare against.
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # If the diff cannot be computed, rebuild rather than skip silently.
+          if ! changed="$(git diff --name-only "$BEFORE" "$AFTER" 2>/dev/null)"; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if printf '%s\n' "$changed" | grep -Eq '^(crates/ddrfsh-cloudflare/|crates/ddrfsh-core/|Cargo\.toml$|Cargo\.lock$|\.github/workflows/release-ddrfsh-cloudflare\.yml$)'; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  container:
+    name: Build and push
+    needs: check
+    if: needs.check.outputs.build == 'true'
+    uses: docker/github-builder/.github/workflows/build.yml@v1
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    with:
+      output: image
+      push: true
+      platforms: linux/amd64,linux/arm64
+      context: .
+      file: crates/ddrfsh-cloudflare/Dockerfile
+      cache: true
+      set-meta-labels: true
+      set-meta-annotations: true
+      meta-images: ghcr.io/ddrfsh/cloudflare
+      meta-tags: |
+        type=match,pattern=^ddrfsh-cloudflare-v(\d+\.\d+\.\d+)$,group=1
+        type=match,pattern=^ddrfsh-cloudflare-v(\d+\.\d+)\.\d+$,group=1
+        type=match,pattern=^ddrfsh-cloudflare-v(\d+)\.\d+\.\d+$,group=1
+        type=edge,branch=master
+        type=sha,format=short
+      meta-flavor: latest=false
+    secrets:
+      registry-auths: |
+        - registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}

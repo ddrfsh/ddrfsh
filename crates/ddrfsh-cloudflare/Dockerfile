@@ -15,10 +15,12 @@ RUN <<EOF
         --root /app/
 EOF
 
-FROM gcr.io/distroless/cc-debian13:latest
+FROM gcr.io/distroless/cc-debian13:nonroot
 
 COPY --from=builder /app/bin/ddrfsh-cloudflare /usr/bin/ddrfsh-cloudflare
 COPY --from=builder /app/LICENSE /usr/share/doc/ddrfsh/copyright
 COPY --from=builder /app/README.md /usr/share/doc/ddrfsh/README.md
+
+USER nonroot
 
 ENTRYPOINT ["/usr/bin/ddrfsh-cloudflare"]

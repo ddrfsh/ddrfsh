@@ -24,11 +24,11 @@ curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
 All configuration is read from the environment, so secrets never appear in
 shell history or process listings.
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `CLOUDFLARE_API_TOKEN` | yes | API token with `Zone.DNS:Edit` |
-| `CLOUDFLARE_ZONE_ID` | yes | 32-character hexadecimal zone ID |
-| `CLOUDFLARE_RECORD` | yes | Full record name, e.g. `home.example.com`; use `example.com` for the apex |
+| Variable               | Required | Description                                                               |
+| ---------------------- | -------- | ------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN` | yes      | API token with `Zone.DNS:Edit`                                            |
+| `CLOUDFLARE_ZONE_ID`   | yes      | 32-character hexadecimal zone ID                                          |
+| `CLOUDFLARE_RECORD`    | yes      | Full record name, e.g. `home.example.com`; use `example.com` for the apex |
 
 `CLOUDFLARE_RECORD` must be ASCII; pass Punycode for internationalized names.
 Trailing dots and wildcards are rejected.
@@ -65,16 +65,31 @@ CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ZONE_ID=... CLOUDFLARE_RECORD=home.example.c
   ddrfsh-cloudflare --create
 ```
 
+## Container image
+
+Images are published to `ghcr.io/ddrfsh/cloudflare`:
+
+```bash
+docker run --rm \
+  -e CLOUDFLARE_API_TOKEN=... \
+  -e CLOUDFLARE_ZONE_ID=... \
+  -e CLOUDFLARE_RECORD=home.example.com \
+  ghcr.io/ddrfsh/cloudflare --ip-family ipv4
+```
+
+The image is distroless: it contains only the binary, so run it as a command
+container or a long-lived daemon with `--daemon`.
+
 ## Options
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `--ip-family <ipv4\|ipv6>` | `ipv4` | Selects both the discovered address family and the record type: `ipv4` → `A`, `ipv6` → `AAAA` |
-| `--daemon` | off | Poll continuously instead of running once |
-| `--interval <SECONDS>` | `300` | Polling interval; requires `--daemon`, minimum 1 |
-| `--create` | off | Create the record when no matching record exists |
-| `-h, --help` | | Show help |
-| `-V, --version` | | Show version |
+| Option                     | Default | Description                                                                                   |
+| -------------------------- | ------- | --------------------------------------------------------------------------------------------- |
+| `--ip-family <ipv4\|ipv6>` | `ipv4`  | Selects both the discovered address family and the record type: `ipv4` → `A`, `ipv6` → `AAAA` |
+| `--daemon`                 | off     | Poll continuously instead of running once                                                     |
+| `--interval <SECONDS>`     | `300`   | Polling interval; requires `--daemon`, minimum 1                                              |
+| `--create`                 | off     | Create the record when no matching record exists                                              |
+| `-h, --help`               |         | Show help                                                                                     |
+| `-V, --version`            |         | Show version                                                                                  |
 
 ## Behaviour
 
