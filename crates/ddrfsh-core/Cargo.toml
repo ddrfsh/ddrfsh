@@ -11,3 +11,8 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
+clap = { workspace = true }
+env_logger = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+ureq = { workspace = true }

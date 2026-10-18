@@ -9,9 +9,21 @@ repository = "https://github.com/ddrfsh/ddrfsh"
 license = "MIT"
 
 [workspace.dependencies]
+clap = { version = "4.5", default-features = false, features = [
+    "std",
+    "help",
+    "usage",
+    "error-context",
+    "derive",
+] }
+env_logger = "0.11"
+log = "0.4"
+thiserror = "2.0"
+ureq = { version = "3.4", default-features = false, features = ["rustls"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
+missing_docs = "warn"
 
 [workspace.lints.clippy]
 dbg_macro = "deny"
