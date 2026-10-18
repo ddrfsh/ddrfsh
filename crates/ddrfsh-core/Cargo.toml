@@ -1,0 +1,13 @@
+[package]
+name = "ddrfsh-core"
+version = "0.1.0"
+description = "Shared logic for ddrfsh DDNS clients"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
