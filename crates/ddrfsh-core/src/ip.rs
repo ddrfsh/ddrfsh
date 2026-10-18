@@ -95,7 +95,7 @@ impl HttpIpSource {
         Self {
             endpoint: endpoint.into(),
             family,
-            agent: http::agent(timeout),
+            agent: http::http_agent(timeout),
         }
     }
 }

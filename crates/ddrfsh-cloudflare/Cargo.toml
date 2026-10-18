@@ -1,0 +1,20 @@
+[package]
+name = "ddrfsh-cloudflare"
+version = "0.1.0"
+description = "Cloudflare DDNS client for ddrfsh"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+clap = { workspace = true }
+ddrfsh-core = { workspace = true }
+log = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+ureq = { workspace = true }

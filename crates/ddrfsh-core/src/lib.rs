@@ -46,6 +46,7 @@ mod run;
 
 pub use cli::{CommonArgs, DEFAULT_INTERVAL_SECS, DaemonOptions, MIN_INTERVAL_SECS};
 pub use error::{ConfigError, Error, IpError};
+pub use http::http_agent;
 pub use ip::{
     DEFAULT_HTTP_TIMEOUT, DEFAULT_IP_ENDPOINT_V4, DEFAULT_IP_ENDPOINT_V6, HttpIpSource, IpFamily,
     IpSource, default_endpoint, parse_public_ip,
