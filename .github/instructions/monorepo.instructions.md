@@ -30,7 +30,7 @@ Only cross-provider shared logic belongs here, for example:
 - Public IP discovery (public API calls, response parsing, IP normalization).
 - Provider abstraction (update request/result types, the `Provider` trait).
 - Orchestration for one-shot execution and the daemon loop.
-- State reading and writing.
+- Change detection for daemon mode (the remembered IP stays in memory).
 - Shared error types, logging initialization, and HTTP client wrapper.
 
 Constraints:

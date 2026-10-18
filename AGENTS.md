@@ -30,19 +30,18 @@ Constraints:
 
 ### 2. `--daemon`: Optional Stateful Polling Mode
 
-`--daemon` runs the two steps above in a loop within the same process and tracks the last successfully updated public IP:
+`--daemon` runs the two steps above in a loop within the same process and remembers the last successfully updated public IP:
 
-- On first run (no state file), perform an update.
-- On every subsequent poll, fetch the public IP first and compare it with the recorded value.
+- On startup (no remembered IP), perform an update.
+- On every subsequent poll, fetch the public IP first and compare it with the remembered value.
 - If the IP is unchanged, skip the update and only emit a debug log.
 - If the IP changed, call the provider API to update the record.
-- **Persist the new IP only after a successful update.** Never write state when fetching the IP or updating fails, so the next poll retries.
-- Keep state isolated per provider; the file name must include the provider name.
-- Store the state file in the OS user state directory (for example, `$XDG_STATE_HOME` on Linux or `~/Library/Application Support` on macOS). Never write it to the current working directory.
+- **Remember the new IP only after a successful update.** Never remember an IP when fetching or updating fails, so the next poll retries.
+- Keep the remembered IP in memory; the process must not write it to disk. A daemon restart therefore performs one redundant, idempotent update.
 - Make the polling interval configurable (for example, `--interval <seconds>`) and keep the default conservative (300 seconds recommended).
 - A failed poll must not terminate the daemon; log the error and continue with the next poll.
 
-Except in `--daemon` mode, no mode may produce persistent state.
+No mode writes state to disk. Only `--daemon` keeps the remembered IP, and only in memory.
 
 ## Monorepo
 
@@ -52,16 +51,16 @@ See [Monorepo instructions](.github/instructions/monorepo.instructions.md).
 
 - Each provider reads only the configuration it needs; avoid a generic configuration framework.
 - Prefer environment variables for credentials over command-line arguments. Plaintext arguments end up in shell history and process listings.
-- Never expose API tokens, secrets, or similar sensitive data in logs, error messages, or state files.
+- Never expose API tokens, secrets, or similar sensitive data in logs or error messages.
 - Fail fast on missing or invalid configuration with a clear, actionable error message.
 
 ## Testing
 
-- Cover the key pure logic in `core`: IP response parsing, IP normalization, change detection, daemon decisions, and state I/O.
+- Cover the key pure logic in `core`: IP response parsing, IP normalization, change detection, and daemon decisions.
 - Abstract all network requests behind a trait or injectable function so tests can substitute a fake.
 - **Tests must not access the real public internet, real DNS APIs, or real credentials.**
 - Provider tests should focus on request construction, signing, and response parsing, using fixed fixtures.
-- State file tests must use temporary directories and must not pollute user directories.
+- Daemon tests must not sleep on real intervals or touch the filesystem.
 
 ## Build and Verification
 
@@ -97,7 +96,7 @@ After changing `ddrfsh-core`, run at least `cargo check --workspace` to ensure e
 - Never commit real credentials or real domain names to the repository, test fixtures, or logs.
 - Do not log complete API responses unless you have confirmed they contain no sensitive information.
 - Verify the target record before updating DNS to avoid modifying unrelated domains.
-- Store only the minimum information required to operate in the state file (at least the last successfully updated public IP and a timestamp; never credentials).
+- Do not persist any runtime state to disk.
 
 ## Agent Working Rules
 
